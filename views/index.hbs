@@ -1,0 +1,52 @@
+<h1>TO DO LIST</h1>
+
+<div class="container">
+    <form class="form-item" action="/tasks" method="post">
+        <label class="item">
+            Task:
+            <input type="text" name="name">
+        </label>
+
+        <label class="item">
+            Status:
+            <select size="1" name="status" id="status">
+                <option selected value="new">new</option>
+                <option value="in progress">in progress</option>
+                <option value="completed">completed</option>
+                <option value="canceled">canceled</option>
+            </select>
+        </label>
+
+        <label class="item">
+            End date:
+            <input type="date" name="endDate" id="endDate">
+        </label>
+
+        <input class="item" type="submit" value="Add task">
+    </form>
+
+    <form class="form-item" action="/tasks" method="get">
+        <label class="item">
+            Filter by status:
+            <select size="1" name="status" id="filter">
+                <option selected value="all">all</option>
+                <option value="new">new</option>
+                <option value="in progress">in progress</option>
+                <option value="completed">completed</option>
+                <option value="canceled">canceled</option>
+            </select>
+        </label>
+
+        <input class="item" type="submit" value="Search">
+    </form>
+</div>
+
+<ul>
+    {{#each tasks}}
+        <li class="task">
+            <p class="task-name">{{name}}</p>
+            <p>Status: {{status}}</p>
+            <p>End date: {{getEndDate endDate}}</p>
+        </li>
+    {{/each}}
+</ul>
