@@ -1,0 +1,28 @@
+.task-container {
+    width: 50%;
+    padding: 0.7em;
+    margin-bottom: 1em;
+    border: 1px solid #bdd2d1;
+    background-color: #eef8f8;
+    border-radius: 0.5em;
+}
+
+.task-container > * {
+    padding: 0.3em;
+}
+
+.task-name {
+    font-size: 1.3em;
+}
+
+.buttons-container {
+    display: flex;
+    justify-content: flex-end;
+    width: 50%;
+}
+
+.buttons-container > * {
+    flex: 1;
+    padding: 0.3em;
+    margin-right: 1em;
+}

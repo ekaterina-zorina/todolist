@@ -1,0 +1,27 @@
+.app {
+    margin-left: 10%;
+}
+
+input, select, .btn {
+    border: 1px solid #bdd2d1;
+    background-color: #fdfdfe;
+    border-radius: 0.3em;
+    outline: none;
+}
+
+.btn {
+    cursor: pointer;
+}
+
+.btn:hover, option:hover {
+    background-color: #eef8f8;
+}
+
+.btn:active {
+    background-color: #eef8f8;
+}
+
+h1 {
+    font-family: "MS Reference Sans Serif", sans-serif;
+    color: #35535e;
+}

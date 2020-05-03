@@ -1,0 +1,35 @@
+.new-task-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: 40%;
+    padding: 0.7em;
+    margin-bottom: 1em;
+}
+
+.new-task-item {
+    display: flex;
+    width: 100%;
+    margin-bottom: 0.5em;
+}
+
+.new-task-item:last-child {
+    width: 30%;
+    margin-bottom: 0;
+}
+
+.new-task-item > input, .new-task-item > select {
+    flex: 3;
+    padding: 0.3em;
+}
+
+.new-task-item > label {
+    flex: 1;
+    padding: 0.3em;
+}
+
+
+.error {
+    margin-bottom: 1em;
+    color: red;
+}

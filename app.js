@@ -4,28 +4,14 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require("mongoose");
-
-const indexRouter = require('./routes/index');
+const config = require("./config");
 const tasksRouter = require('./routes/tasks');
-const hbs = require("hbs");
 
 const app = express();
 
-const uri = "mongodb://localhost:27017/todolist"
-mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true})
-  .catch(err => console.log(err));
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'hbs');
-
-hbs.registerHelper("getEndDate", (date) => {
-  let day = ("0" + date.getDate()).slice(-2);
-  let month = ("0" + (date.getMonth() + 1)).slice(-2);
-  let year = date.getFullYear();
-
-  return `${day}-${month}-${year}`;
-});
+mongoose.connect(config.database, {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false})
+  .then(() => console.log("Successfully connected to the MongoDB"))
+  .catch(err => console.log(`Error connecting to the MongoDB: ${err}`));
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -33,7 +19,6 @@ app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
 app.use('/tasks', tasksRouter);
 
 // catch 404 and forward to error handler
