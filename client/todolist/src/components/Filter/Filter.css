@@ -1,8 +1,7 @@
 .wrapper {
     display: flex;
     align-items: flex-end;
-    margin-bottom: 3em;
-    padding: 0.7em;
+    margin-bottom: 20px;
 }
 
 .wrapper > * {

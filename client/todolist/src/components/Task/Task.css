@@ -1,28 +1,28 @@
 .task-container {
     width: 50%;
-    padding: 0.7em;
-    margin-bottom: 1em;
-    border: 1px solid #bdd2d1;
-    background-color: #eef8f8;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #abd1e7;
+    background-color: aliceblue;
     border-radius: 0.5em;
 }
 
 .task-container > * {
-    padding: 0.3em;
+    padding: 5px;
 }
 
 .task-name {
-    font-size: 1.3em;
+    font-size: 1.5em;
 }
 
 .buttons-container {
     display: flex;
     justify-content: flex-end;
     width: 50%;
+    margin-top: 15px;
 }
 
 .buttons-container > * {
     flex: 1;
-    padding: 0.3em;
-    margin-right: 1em;
+    margin-right: 5px;
 }

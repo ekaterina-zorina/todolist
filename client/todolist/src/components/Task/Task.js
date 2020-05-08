@@ -50,8 +50,8 @@ class Task extends React.Component {
         <div>Status: {this.state.task.status}</div>
         <div>End date: {this.state.task.endDate}</div>
         <div className="buttons-container">
-          <button className="btn" onClick={this.update}>Edit</button>
-          <button className="btn" onClick={this.delete}>Delete</button>
+          <button className="btn edit-btn" onClick={this.update}>Edit</button>
+          <button className="btn save-btn" onClick={this.delete}>Delete</button>
         </div>
       </div>
     );

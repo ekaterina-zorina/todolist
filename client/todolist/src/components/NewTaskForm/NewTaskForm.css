@@ -3,31 +3,29 @@
     flex-direction: column;
     align-items: flex-end;
     width: 40%;
-    padding: 0.7em;
-    margin-bottom: 1em;
+    margin-bottom: 10px;
 }
 
 .new-task-item {
     display: flex;
+    flex-direction: column;
     width: 100%;
-    margin-bottom: 0.5em;
+    margin-bottom: 10px;
 }
 
 .new-task-item:last-child {
     width: 30%;
-    margin-bottom: 0;
 }
 
-.new-task-item > input, .new-task-item > select {
+.new-task-input {
     flex: 3;
     padding: 0.3em;
 }
 
-.new-task-item > label {
+.new-task-label {
     flex: 1;
-    padding: 0.3em;
+    font-weight: 500;
 }
-
 
 .error {
     margin-bottom: 1em;

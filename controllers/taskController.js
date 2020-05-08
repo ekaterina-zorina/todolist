@@ -1,6 +1,6 @@
 const Task = require("../models/Task");
 
-exports.getTasks = function (req, res) {
+exports.getTasks = async function (req, res) {
   let query;
 
   if (!req.query.status || req.query.status === "all") {
@@ -9,18 +9,18 @@ exports.getTasks = function (req, res) {
     query = {status: req.query.status};
   }
 
-  Task.find(query, (err, tasks) => {
-    if (err) {
-      return res.status(500).json({message: err.message});
-    }
-
-    res.status(200).json(tasks);
-  });
+  query.userId = res.locals.userId;
+  try {
+    let tasks = await Task.find(query);
+    res.status(200).json({data: tasks});
+  } catch (e) {
+    res.status(500).json({message: e.message});
+  }
 };
 
-exports.addTask = function (req, res) {
-  if (!req.body) {
-    return res.status(400).json({message: "Bad request"});
+exports.addTask = async function (req, res) {
+  if (!req.body.name) {
+    return res.status(400).json({message: "Bad request: empty name"});
   }
 
   if (!req.body.endDate) {
@@ -28,42 +28,38 @@ exports.addTask = function (req, res) {
   }
 
   let {name, status, endDate} = req.body;
-  let task = new Task({name, status, endDate});
+  let userId = res.locals.userId;
+  let task = new Task({name, status, endDate, userId});
 
-  task.save((err) => {
-    if (err) {
-      return res.status(500).json({message: err.message});
-    }
-
-    res.set({
-      "Location": `${req.protocol}://${req.get("host")}/tasks/${task._id}`
-    }).status(201).json({message: "Task successfully added"});
-  });
+  try {
+    await task.save();
+    res
+      .set("Location", `${req.protocol}://${req.get("host")}/tasks/${task._id}`)
+      .status(201)
+      .json({message: "Task successfully added"});
+  } catch (e) {
+    res.status(500).json({message: e.message});
+  }
 };
 
-exports.editTask = function (req, res) {
-  if (!req.body) {
-    return res.status(400).json({message: "Bad request"});
-  }
-
+exports.editTask = async function (req, res) {
   let {name, status, endDate} = req.body;
-  let newTask = {name, status, endDate};
+  let userId = res.locals.userId;
+  let newTask = {name, status, endDate, userId};
 
-  Task.findByIdAndUpdate(req.params.id, newTask, {new: true}, (err, task) => {
-    if (err) {
-      return res.status(500).json({message: err.message});
-    }
-
+  try {
+    await Task.findByIdAndUpdate(req.params.id, newTask);
     res.status(200).json({message: "Task successfully updated"});
-  });
+  } catch (e) {
+    res.status(500).json({message: e.message});
+  }
 }
 
-exports.deleteTask = function (req, res) {
-  Task.findByIdAndDelete(req.params.id, (err, task) => {
-    if (err) {
-      return res.status(500).json({message: err.message});
-    }
-
+exports.deleteTask = async function (req, res) {
+  try {
+    await Task.findByIdAndDelete(req.params.id);
     res.status(200).json({message: "Task successfully deleted"});
-  });
+  } catch (e) {
+    res.status(500).json({message: e.message})
+  }
 };

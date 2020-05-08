@@ -65,10 +65,14 @@ class NewTaskForm extends React.Component {
 
   render() {
     return (
-      <form className="new-task-container" onSubmit={this.save}>
+      <form className="new-task-container">
         <div className="new-task-item">
-          <label htmlFor="taskName">Task:</label>
-          <input type="text" id="taskName"
+          <label htmlFor="taskName" className="new-task-label">
+            Task
+          </label>
+          <input type="text"
+                 id="taskName"
+                 className="new-task-input"
                  onChange={this.handleNameChange}
                  value={this.state.name}/>
         </div>
@@ -76,8 +80,11 @@ class NewTaskForm extends React.Component {
 
 
         <div className="new-task-item">
-          <label htmlFor="status">Status:</label>
+          <label htmlFor="status" className="new-task-label">
+            Status
+          </label>
           <select id="status"
+                  className="new-task-input"
                   onChange={this.handleSelectChange}
                   value={this.state.status}>
             <option value="new">new</option>
@@ -88,14 +95,22 @@ class NewTaskForm extends React.Component {
         </div>
 
         <div className="new-task-item">
-          <label htmlFor="endDate">End date:</label>
-          <input id="endDate" type="date"
+          <label htmlFor="endDate" className="new-task-label">
+            End date
+          </label>
+          <input type="date"
+                 id="endDate"
+                 className="new-task-input"
                  onChange={this.handleEndDateChange}
                  value={this.state.endDate}/>
         </div>
 
-        <div className="new-task-item">
-          <input className="btn" type="submit" value={this.state.buttonName}/>
+        <div>
+          <button type="submit"
+                  className="btn"
+                  onClick={this.save}>
+            {this.state.buttonName}
+          </button>
         </div>
       </form>
     );

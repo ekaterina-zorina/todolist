@@ -27,7 +27,10 @@ class Filter extends React.Component {
           <option value="canceled">canceled</option>
         </select>
 
-        <input className="btn" type="button" value="Search" onClick={this.filterTasks}/>
+        <input className="btn"
+               type="button"
+               value="Search"
+               onClick={this.filterTasks}/>
       </div>
     );
   }
