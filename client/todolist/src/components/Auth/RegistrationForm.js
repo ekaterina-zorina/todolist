@@ -1,8 +1,9 @@
 import React from "react";
 import "./auth.css";
 import {Link} from "react-router-dom";
+import io from "socket.io-client";
 
-const USERS_URL = "http://localhost:3000/users";
+const socket = io("http://localhost:3001/users/register");
 
 class RegistrationForm extends React.Component {
   constructor(props) {
@@ -67,32 +68,25 @@ class RegistrationForm extends React.Component {
       password: this.state.password
     };
 
-    let response = await fetch(`${USERS_URL}/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(user)
+    socket.emit("registration", user);
+    socket.on("registration", response => {
+      if (response.status === 201) {
+          this.setState({
+            name: "",
+            email: "",
+            password: "",
+            usernameError: "",
+            emailError: "",
+            passwordError: "",
+            error: "",
+            success: "User successfully registered"
+          });
+        } else {
+          this.setState({
+            error: response.message
+          });
+        }
     });
-
-    if (response.status === 201) {
-      this.setState({
-        name: "",
-        email: "",
-        password: "",
-        usernameError: "",
-        emailError: "",
-        passwordError: "",
-        error: "",
-        success: "User successfully registered"
-      });
-    } else {
-      let responseData = await response.json();
-
-      this.setState({
-        error: responseData.message
-      });
-    }
   }
 
   render() {

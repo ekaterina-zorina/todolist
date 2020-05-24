@@ -2,8 +2,9 @@ import React from "react";
 import "./auth.css";
 import {Redirect} from "react-router";
 import {Link} from "react-router-dom";
+import io from "socket.io-client";
 
-const USERS_URL = "http://localhost:3000/users";
+const socket = io("http://localhost:3001/users/login");
 
 class LoginForm extends React.Component {
   constructor(props) {
@@ -11,9 +12,14 @@ class LoginForm extends React.Component {
     this.state = {
       email: "",
       password: "",
-      isLoggedIn: false,
-      username: null
+      username: "",
+      error: ""
     };
+
+    let token = localStorage.getItem("access-token");
+    let username = localStorage.getItem("username");
+
+    this.state.isLoggedIn = token & username;
   }
 
   handleEmailChange = (e) => {
@@ -31,49 +37,30 @@ class LoginForm extends React.Component {
       password: this.state.password
     };
 
-    let response = await fetch(`${USERS_URL}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(user)
-    });
+    socket.emit("login", user);
+    socket.on("login", response => {
+      if (response.status === 200) {
+        localStorage.setItem("access-token", response.token);
+        localStorage.setItem("username", response.username);
+        localStorage.setItem("userId", response.userId);
 
-    if (response.ok) {
-      let responseData = await response.json();
-
-      this.setState({
-        email: "",
-        password: "",
-        isLoggedIn: true,
-        username: responseData.username
-      });
-    } else {
-      this.setState({error: "Incorrect username or password"});
-    }
-  }
-
-  componentDidMount() {
-    fetch("http://localhost:3000/users/login")
-      .then(response => {
-        if (response.status === 409) {
-          this.setState({
-            isLoggedIn: true
+        this.setState({
+          email: "",
+          password: "",
+          isLoggedIn: true,
+          username: response.username
           });
-        }
-      })
-      .catch(err => console.log(err));
+      } else {
+        this.setState({
+          error: "Incorrect username or password"
+        });
+      }
+    });
   }
 
   render() {
     if (this.state.isLoggedIn) {
-      return <Redirect to={{
-        pathname: "/tasks",
-        state: {
-          isLoggedIn: true,
-          username: this.state.username
-        }
-      }}/>
+      return <Redirect to="/tasks"/>
     }
 
     return (
@@ -122,7 +109,7 @@ class LoginForm extends React.Component {
           </div>
         </form>
       </div>
-    )
+    );
   }
 }
 

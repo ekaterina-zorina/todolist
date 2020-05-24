@@ -3,56 +3,70 @@ const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const config = require("../config");
 
-exports.addUser = async function (req, res) {
-  let hash = bcrypt.hashSync(req.body.password, 10);
+exports.addUser = async function (user) {
+  let hash = bcrypt.hashSync(user.password, 10);
 
-  let user = await User.findOne({email: req.body.email});
-  if (user) {
-    return res.status(400).json({message: "Email address already in use"});
+  let foundUser = await User.findOne({email: user.email});
+  if (foundUser) {
+    return {
+      status: 400,
+      message: "Email address already in use"
+    };
   }
 
   let newUser = new User({
-    name: req.body.name,
-    email: req.body.email,
+    name: user.name,
+    email: user.email,
     password: hash
   });
 
   try {
     await newUser.save();
 
-    res
-      .set("Location", `${req.protocol}://${req.get("host")}/users/${newUser._id}`)
-      .status(201)
-      .json({message: "User successfully added"});
+    return {
+      status: 201,
+      message: "User successfully added"
+    };
   } catch (e) {
-    res.status(500).json({message: e.message});
+    return {
+      status: 500,
+      message: e.message
+    };
   }
-};
+}
 
-exports.loginUser = async function (req, res) {
-  let user = {
-    email: req.body.email,
-    password: req.body.password
-  };
 
+exports.loginUser = async function (user) {
   try {
     let foundUser = await User.findOne({email: user.email});
     if (!foundUser) {
-      return res.status(400).json({message: "Invalid email or password"});
+      return {
+        status: 400,
+        message: "Invalid email or password"
+      };
     }
 
     let isPasswordValid = bcrypt.compareSync(user.password, foundUser.password);
     if (!isPasswordValid) {
-      return res.status(400).json({message: "Invalid email or password"});
+      return {
+        status: 400,
+        message: "Invalid email or password"
+      };
     }
 
     let token = jwt.sign({id: foundUser._id}, config.secret, {expiresIn: 259200});
-    res
-      .status(200)
-      .cookie("x-access-token", token, {httpOnly: false})
-      .json({message: "Successfully login", username: foundUser.name});
+    return {
+      status: 200,
+      token: token,
+      message: "Successfully login",
+      username: foundUser.name,
+      userId: foundUser._id
+    };
   } catch (e) {
-    res.status(500).json({message: e.message});
+    return {
+      status: 500,
+      message: e.message
+    }
   }
 };
 

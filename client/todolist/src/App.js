@@ -4,9 +4,10 @@ import Filter from "./components/Filter/Filter";
 import Task from "./components/Task/Task";
 import {Link, Redirect} from "react-router-dom";
 import "./App.css";
+import io from "socket.io-client";
 
-const TASKS_URL = "http://localhost:3000/tasks";
-const USERS_URL = "http://localhost:3000/users";
+const socket = io("http://localhost:3001/tasks");
+let authSocket;
 
 class App extends React.Component {
   constructor(props) {
@@ -18,93 +19,104 @@ class App extends React.Component {
       shouldLogIn: false
     };
 
-    if (this.props.location.state) {
-      this.state.isLoggedIn = this.props.location.state.isLoggedIn;
-      this.state.username = this.props.location.state.username;
+    let token = localStorage.getItem("access-token");
+    let username = localStorage.getItem("username");
+    let userId = localStorage.getItem("userId");
+
+    if (token && username) {
+      this.state.isLoggedIn = true;
+      this.state.username = username;
+      this.state.userId = userId;
     } else {
       this.state.isLoggedIn = false;
-      this.state.username = null;
+      this.state.username = "";
+      this.state.userId = "";
     }
   }
 
-  getTasks = async (status = "all") => {
-    let response = await fetch(`${TASKS_URL}?status=${status}`);
-
-    this.handleResponse(response);
-
-    if (response.ok) {
-      let json = await response.json();
-      let tasks = json.data;
-      this.setState({tasks: tasks});
-    }
-  }
-
-  addTask = async (task) => {
-    let response = await fetch(TASKS_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8"
-      },
-      body: JSON.stringify(task)
+  getTasks = (status = "all") => {
+    authSocket.emit("getTasks", {
+      filter: status,
+      userId: this.state.userId
     });
 
-    this.handleResponse(response);
-
-    if (response.ok) {
-      this.getTasks();
-      this.setState({filterValue: "all"});
-    }
+    authSocket.on("getTasks", response => {
+      if (response.status === 200) {
+        this.setState({tasks: response.tasks});
+      }
+    });
   }
 
-  updateTask = async (newTask, id) => {
-    let response = await fetch(`${TASKS_URL}/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8"
-      },
-      body: JSON.stringify(newTask)
+  addTask = (task) => {
+    authSocket.emit("addTask", {
+      task: task,
+      userId: this.state.userId
     });
 
-    this.handleResponse(response);
-
-    if (response.ok) {
-      let tasks = this.state.tasks;
-
-      for (let i = 0; i < tasks.length; i++) {
-        if (tasks[i]._id === id) {
-          tasks[i].name = newTask.name;
-          tasks[i].status = newTask.status;
-          tasks[i].endDate = newTask.endDate;
-          break;
-        }
+    authSocket.on("addTask", response => {
+      if (response.status === 401) {
+        this.handleUnauthenticatedResponse();
       }
 
-      this.setState({tasks: tasks});
-    }
+      if (response.status === 201) {
+        this.getTasks();
+        this.setState({filterValue: "all"});
+      }
+    });
   }
 
-  deleteTask = async (id) => {
-    let response = await fetch(`${TASKS_URL}/${id}`, {
-      method: "DELETE"
-    });
+  updateTask = (newTask, id) => {
+    authSocket.emit("updateTask", {newTask, id});
 
-    this.handleResponse(response);
+    authSocket.on("updateTask", response => {
+      if (response.status === 200) {
+        let tasks = this.state.tasks;
 
-    if (response.ok) {
-      let tasks = this.state.tasks;
-
-      for (let i = 0; i < tasks.length; i++) {
-        if (tasks[i]._id === id) {
-          tasks.splice(i, 1);
-          break;
+        for (let i = 0; i < tasks.length; i++) {
+          if (tasks[i]._id === id) {
+            tasks[i].name = newTask.name;
+            tasks[i].status = newTask.status;
+            tasks[i].endDate = newTask.endDate;
+            break;
+          }
         }
-      }
 
-      this.setState({tasks: tasks});
-    }
+        this.setState({tasks: tasks});
+      } else if (response.status === 401) {
+        this.handleUnauthenticatedResponse();
+      }
+    });
+  }
+
+  deleteTask = (id) => {
+    authSocket.emit("deleteTask", {id});
+
+    authSocket.on("deleteTask", response => {
+      if (response.status === 200) {
+        let tasks = this.state.tasks;
+
+        for (let i = 0; i < tasks.length; i++) {
+          if (tasks[i]._id === id) {
+            tasks.splice(i, 1);
+            break;
+          }
+        }
+
+        this.setState({tasks: tasks});
+      } else if (response.status === 401) {
+        this.handleUnauthenticatedResponse();
+      }
+    });
   }
 
   componentDidMount() {
+    let token = localStorage.getItem("access-token");
+    if (token) {
+      authSocket = io(`http://localhost:3001/tasks?token=${token}`);
+    } else {
+      authSocket = socket;
+    }
+
     if (this.state.isLoggedIn) {
       this.getTasks();
     }
@@ -114,30 +126,23 @@ class App extends React.Component {
     this.setState({filterValue: selectedValue});
   }
 
-  handleResponse = (response) => {
-    if (response.status === 401) {
-      this.setState({
-        tasks: [],
-        isLoggedIn: false,
-        shouldLogIn: true,
-        username: null
-      });
-    } else if (response.ok) {
-      this.setState({
-        isLoggedIn: true,
-        shouldLogIn: false
-      });
-    }
+  handleUnauthenticatedResponse = () => {
+    this.setState({
+      tasks: [],
+      isLoggedIn: false,
+      shouldLogIn: true,
+      username: null
+    });
   }
 
-  handleLogout = async () => {
-    let response = await fetch(`${USERS_URL}/logout`);
-    if (response.ok) {
-      this.setState({
-        isLoggedIn: false,
-        shouldLogIn: false
-      });
-    }
+  handleLogout = () => {
+    this.setState({
+      isLoggedIn: false,
+      shouldLogIn: false
+    });
+
+    localStorage.clear();
+    authSocket = socket;
   }
 
   renderAuthenticatedUser() {
